@@ -178,7 +178,6 @@ function getOverwrite(queries, callback) {
         chosenSignature.test(query) &&
           chosenSignature.exec.name === 'canBeMapped'
       ) {
-        console.log(query, chosenSignature);
         return chosenSignature.map(query);
       }
     } while (i !== 0);
@@ -226,7 +225,6 @@ module.exports = function mapToDBTable() {
     });
 
     getSignature.test = function (query) {
-      console.log(query);
       return Object.getPrototypeOf(query) === Object.prototype;
     };
 

@@ -23,7 +23,6 @@ GetSignature.prototype.map = function map(query, useAllQueryKeys) {
     keys = this.keys;
 
   if (useAllQueryKeys) {
-    console.log(query);
     Object.keys(query)
       .forEach(function (key) {
         var i = values.indexOf(key);
