@@ -66,6 +66,10 @@ Class.is = function is(instance) {
 Class.create = function create(details, callback) {
   var instance = new this(details);
 
+  if (!is.func(callback)) {
+    callback = noop;
+  }
+
   setTimeout(callback.bind(this, instance), 4);
 
   return this.emit("create", instance, callback);
