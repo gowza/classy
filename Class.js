@@ -97,25 +97,26 @@ Class.get = function get(query, callback) {
     }
   }
 
-  query = [].concat(query)
-    .map(function exec(details) {
-      var i = getSignatures.length,
-        getSignature;
+  query = [].concat(query);
 
-      // If a getSignature returns false that means it does not match the function signatures and thus
-      // another getSignature should be invoked
-      do {
-        i -= 1;
-        getSignature = getSignatures[i];
+  query = query.map(function exec(details) {
+    var i = getSignatures.length,
+      getSignature;
 
-        if (getSignature.test(details)) {
-          getSignature.exec(details, manipulateArrayThenCallback);
-          return true;
-        }
-      } while (i !== 0);
+    // If a getSignature returns false that means it does not match the function signatures and thus
+    // another getSignature should be invoked
+    do {
+      i -= 1;
+      getSignature = getSignatures[i];
 
-      throw new Error("Uncauht Query");
-    });
+      if (getSignature.test(details)) {
+        getSignature.exec(details, manipulateArrayThenCallback);
+        return true;
+      }
+    } while (i !== 0);
+
+    throw new Error("Uncauht Query");
+  });
 
   return this;
 };
@@ -167,6 +168,11 @@ Class.addRegistry = function addRegistry(keys, noGetSignature) {
   }, function (query, callback) {
     callback(registry.get(query));
   });
+};
+
+Class.overwrite = function (name, func) {
+  func.super = this[name];
+  this[name] = func;
 };
 
 Class.mapToDBTable = mapToDBTable;

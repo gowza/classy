@@ -39,22 +39,42 @@ function getRowsFromDb(name, query, callback) {
   db("SELECT * FROM ?? WHERE ?", [name, query], callback);
 }
 
-function overWrite(self, name, func) {
-  var invocations = [];
+function overwrite(name, func, toProto) {
+  var container = toProto ? this.prototype : this;
 
-  func.super = self[name];
+  func.super = container[name];
 
-  self[name] = function () {
-    invocations.push(arguments);
-  };
-
-  return function () {
-    self[name] = func;
-
-    invocations.forEach(function (args) {
-      self[name].apply(self, args);
+  function queBeforeDbReady() {
+    queBeforeDbReady.invocations.push({
+      "that": this,
+      "arguments": arguments
     });
+
+    return this;
+  }
+
+  queBeforeDbReady.onDbReady = function () {
+    queBeforeDbReady.invocations.forEach(function (context) {
+      func.apply(context.that, context.arguments);
+    });
+
+    container[name] = func;
   };
+
+  queBeforeDbReady.queFor = func;
+
+  container[name] = queBeforeDbReady;
+
+  // If we are overwriting a dbQueuer
+  if (func.super.name === 'queBeforeDbReady') {
+    this.off('dbReady', func.super.onDbReady);
+    queBeforeDbReady.invocations = func.super.invocations;
+    func.super = func.super.queFor;
+  } else {
+    queBeforeDbReady.invocations = [];
+  }
+
+  return this.on('dbReady', queBeforeDbReady.onDbReady);
 }
 
 // Done
@@ -210,12 +230,14 @@ module.exports = function mapToDBTable() {
   var Implementation = this,
     name = this.name;
 
+  Implementation.overwrite = overwrite;
+
   Implementation
-    .on('dbReady', overWrite(Implementation.prototype, 'update', updateOverwrite))
-    .on('dbReady', overWrite(Implementation.prototype, 'delete', deleteOverwrite))
-    .on('dbReady', overWrite(Implementation, 'create', createOverwrite))
-    .on('dbReady', overWrite(Implementation, 'addGetSignature', addGetSignatureOverwrite))
-    .on('dbReady', overWrite(Implementation, 'get', getOverwrite));
+    .overwrite('create', createOverwrite)
+    .overwrite('addGetSignature', addGetSignatureOverwrite)
+    .overwrite('get', getOverwrite)
+    .overwrite('update', updateOverwrite, true)
+    .overwrite('delete', deleteOverwrite, true);
 
   Implementation.getRowsFromDb = getRowsFromDb.bind(Implementation, name);
 

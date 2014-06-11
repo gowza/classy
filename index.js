@@ -27,6 +27,8 @@ module.exports = function returnClass(module) {
 
   Implementation.prototype = new Class(Implementation);
 
+  Implementation.is = Implementation.is.bind(Implementation);
+
   module.exports = Implementation;
 
   return Implementation;
