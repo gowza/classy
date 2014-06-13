@@ -175,6 +175,11 @@ Class.overwrite = function (name, func) {
   this[name] = func;
 };
 
+Class.overwritePrototype = function (name, func) {
+  func.super = this.prototype[name];
+  this.prototype[name] = func;
+};
+
 Class.mapToDBTable = mapToDBTable;
 
 Class.prototype = new EventEmitter();
