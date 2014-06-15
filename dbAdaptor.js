@@ -36,7 +36,6 @@ function isAutoIncrement(col) {
 }
 
 function getRowsFromDb(name, query, callback) {
-  db.debugQuery("SELECT * FROM ?? WHERE ?", [name, query]);
   db("SELECT * FROM ?? WHERE ?", [name, query], callback);
 }
 
