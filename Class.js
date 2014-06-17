@@ -246,6 +246,8 @@ Class.prototype.update = function update(values, callback) {
     delete registry[registry.buildKey(this)];
   }
 
+  this.constructor.constructor.call(this, values);
+
   this.copyProperties(values);
 
   if (registry) {

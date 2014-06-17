@@ -77,6 +77,10 @@ function overwrite(name, func, toProto) {
   return this.on('dbReady', queBeforeDbReady.onDbReady);
 }
 
+function overwritePrototype(name, func) {
+  return overwrite.call(this, name, func, true);
+}
+
 // Done
 function updateOverwrite(details, callback) {
   var Implementation = this.constructor,
@@ -84,11 +88,19 @@ function updateOverwrite(details, callback) {
     name = Implementation.name,
     self = this;
 
+  db.debugQuery('UPDATE ?? SET ? WHERE ?', [
+    name,
+    toObj(Implementation.properties, details),
+    toObj(primaryKeys, self)
+  ]);
+
   db('UPDATE ?? SET ? WHERE ?', [
     name,
     toObj(Implementation.properties, details),
     toObj(primaryKeys, self)
   ], function () {
+
+  db.debugQuery("SELECT * FROM ?? WHERE ?", [name, toObj(primaryKeys, details, self)]);
     db("SELECT * FROM ?? WHERE ?", [name, toObj(primaryKeys, details, self)], function (rows) {
       if (rows.length !== 1) {
         throw new Error("Lost the instance");
@@ -119,7 +131,11 @@ function createOverwrite(details, callback) {
       details[autoIncrement] = result.insertId;
     }
 
+    console.log(details);
+
     getRowsFromDb(Implementation.name, details, function (rows) {
+
+    console.log(rows);
       createOverwrite.super.call(Implementation, rows[0], callback);
     });
   });
@@ -231,13 +247,14 @@ module.exports = function mapToDBTable() {
     name = this.name;
 
   Implementation.overwrite = overwrite;
+  Implementation.overwritePrototype = overwritePrototype;
 
   Implementation
     .overwrite('create', createOverwrite)
     .overwrite('addGetSignature', addGetSignatureOverwrite)
     .overwrite('get', getOverwrite)
-    .overwrite('update', updateOverwrite, true)
-    .overwrite('delete', deleteOverwrite, true);
+    .overwritePrototype('update', updateOverwrite)
+    .overwritePrototype('delete', deleteOverwrite);
 
   Implementation.getRowsFromDb = getRowsFromDb.bind(Implementation, name);
 
