@@ -88,19 +88,12 @@ function updateOverwrite(details, callback) {
     name = Implementation.name,
     self = this;
 
-  db.debugQuery('UPDATE ?? SET ? WHERE ?', [
-    name,
-    toObj(Implementation.properties, details),
-    toObj(primaryKeys, self)
-  ]);
-
   db('UPDATE ?? SET ? WHERE ?', [
     name,
     toObj(Implementation.properties, details),
     toObj(primaryKeys, self)
   ], function () {
 
-  db.debugQuery("SELECT * FROM ?? WHERE ?", [name, toObj(primaryKeys, details, self)]);
     db("SELECT * FROM ?? WHERE ?", [name, toObj(primaryKeys, details, self)], function (rows) {
       if (rows.length !== 1) {
         throw new Error("Lost the instance");
