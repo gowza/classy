@@ -124,11 +124,7 @@ function createOverwrite(details, callback) {
       details[autoIncrement] = result.insertId;
     }
 
-    console.log(details);
-
     getRowsFromDb(Implementation.name, details, function (rows) {
-
-    console.log(rows);
       createOverwrite.super.call(Implementation, rows[0], callback);
     });
   });
