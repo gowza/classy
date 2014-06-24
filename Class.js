@@ -219,6 +219,10 @@ Class.prototype.emit = function (eventName) {
   var Implementation = this.constructor,
     emit = EventEmitter.prototype.emit;
 
+  if (eventName === 'error') {
+    console.error(arguments);
+  }
+
   emit.apply(Implementation, [eventName, this].concat([].slice.call(arguments, 1)));
 
   return emit.apply(this, arguments);
