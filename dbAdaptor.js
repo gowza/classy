@@ -43,8 +43,6 @@ function getRowsFromDb(name, query, callback) {
     delete query[' limit'];
   }
 
-  console.trace();
-  console.log(sql, query);
   db(sql, [name, query], callback);
 }
 
@@ -177,9 +175,18 @@ function addGetSignatureOverwrite(a1, a2, a3) {
 
     getSignature.test = a1;
 
-    if (a3) {
+    if (is.integer(a3)) {
       getSignature.priority = a3;
+    } else if (is.baseObject(a3)) {
+      getSignature.map = function () {
+        return Object.keys(a3)
+          .reduce(function (mapped, key) {
+            mapped[key] = a3[key];
+            return mapped;
+          }, GetSignature.prototype.map.apply(this, arguments));
+      };
     }
+
     break;
   }
 
@@ -218,8 +225,6 @@ function getOverwrite(queries, callback) {
 
     return false;
   });
-
-  console.log(mappedQueries);
 
   if (!mappedQueries.every(isTruthy)) {
     return getOverwrite.super.call(this, queries, callback);
@@ -260,11 +265,15 @@ module.exports = function mapToDBTable() {
 
   db('DESCRIBE ??', [name], function (rows) {
     var getSignature = new GetSignature(function canBeMapped(query, callback) {
-      getRowsFromDb(name, this.map(query, true), callback);
+      getRowsFromDb(name, query, callback);
     });
 
     getSignature.test = function (query) {
       return Object.getPrototypeOf(query) === Object.prototype;
+    };
+
+    getSignature.map = function (query) {
+      return query;
     };
 
     getSignature.keys = getSignature.values = Implementation.properties = rows.map(toName);

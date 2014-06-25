@@ -17,29 +17,15 @@ GetSignature.prototype.exec = function exec(query, callback) {
   setTimeout(callback.bind(null, []), 4);
 };
 
-GetSignature.prototype.map = function map(query, useAllQueryKeys) {
+GetSignature.prototype.map = function map(query) {
   var values = this.values,
-    mappedQuery = {},
-    keys = this.keys;
+    mappedQuery = {};
 
-  if (useAllQueryKeys) {
-    Object.keys(query)
-      .forEach(function (key) {
-        var i = values.indexOf(key);
-
-        if (i === -1) {
-          mappedQuery[key] = query[key];
-        } else {
-          mappedQuery[keys[i]] = query[key];
-        }
-      });
-  } else {
-    keys.forEach(function (key, i) {
-      if (query.hasOwnProperty(values[i])) {
-        mappedQuery[key] = query[values[i]];
-      }
-    });
-  }
+  this.keys.forEach(function (key, i) {
+    if (query.hasOwnProperty(values[i])) {
+      mappedQuery[key] = query[values[i]];
+    }
+  });
 
   return mappedQuery;
 };
