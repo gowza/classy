@@ -36,7 +36,16 @@ function isAutoIncrement(col) {
 }
 
 function getRowsFromDb(name, query, callback) {
-  db("SELECT * FROM ?? WHERE ?", [name, query], callback);
+  var sql = "SELECT * FROM ?? WHERE ?";
+
+  if (is.integer(query[' limit'])) {
+    sql += ' LIMIT ' + query[' limit'];
+    delete query[' limit'];
+  }
+
+  console.trace();
+  console.log(sql, query);
+  db(sql, [name, query], callback);
 }
 
 function overwrite(name, func, toProto) {
@@ -209,6 +218,8 @@ function getOverwrite(queries, callback) {
 
     return false;
   });
+
+  console.log(mappedQueries);
 
   if (!mappedQueries.every(isTruthy)) {
     return getOverwrite.super.call(this, queries, callback);
