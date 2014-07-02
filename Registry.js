@@ -16,7 +16,9 @@ function buildMatchFunc(query) {
 }
 
 function Registry(keys) {
-  this.keys = keys;
+  Object.defineProperty(this, "keys", {
+    "value": keys
+  });
 }
 
 Registry.prototype.keys = [];
@@ -55,6 +57,19 @@ Registry.prototype.buildKey = function buildKey(obj) {
   }
 
   return key.join('-');
+};
+
+Registry.prototype.forIn = function forIn(callback) {
+  var key;
+
+  for (key in this) {
+    if (
+      this.hasOwnProperty(key) &&
+        this.propertyIsEnumerable(key)
+    ) {
+      callback(this[key], key, this);
+    }
+  }
 };
 
 module.exports = Registry;

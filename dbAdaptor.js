@@ -43,6 +43,7 @@ function getRowsFromDb(name, query, callback) {
     delete query[' limit'];
   }
 
+//  db.debugQuery(sql, [name, query]);
   db(sql, [name, query], callback);
 }
 
