@@ -110,6 +110,8 @@ function updateOverwrite(details, callback) {
       updateOverwrite.super.call(self, rows[0], callback);
     });
   });
+
+  return this;
 }
 
 // Done

@@ -220,6 +220,7 @@ Class.prototype.emit = function (eventName) {
     emit = EventEmitter.prototype.emit;
 
   if (eventName === 'error') {
+    console.error(this);
     console.error(arguments);
   }
 
