@@ -121,6 +121,12 @@ Class.get = function get(query, callback) {
   return this;
 };
 
+Class.count = function count(query, callback) {
+  this.get(query, function (first, all, total) {
+    callback(total);
+  });
+};
+
 Class.addGetSignature = function addGetSignature(a1, a2, a3) {
   var getSignature;
 

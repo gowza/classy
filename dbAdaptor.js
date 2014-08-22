@@ -43,8 +43,59 @@ function getRowsFromDb(name, query, callback) {
     delete query[' limit'];
   }
 
-//  db.debugQuery(sql, [name, query]);
   db(sql, [name, query], callback);
+}
+
+function mapOrFalse(queries, getSignatures) {
+  var mappedQueries = [],
+    q,
+    g;
+
+  // You dont map non array queries
+  if (!is.array(queries, 1, Infinity)) {
+    return false;
+  }
+
+  // To map a query, all elements must be mapable
+  for (q = 0; q < queries.length; q += 1) {
+    g = getSignatures.length;
+
+    do {
+      g -= 1;
+
+      if (getSignatures[g].test(queries[q])) {
+        if (getSignatures[g].exec.name !== 'canBeMapped') {
+          console.log(getSignatures[g].exec.toString());
+          return false;
+        }
+
+        mappedQueries.unshift(getSignatures[g].map(queries[q]));
+        g = -1;
+      }
+    } while (g > 0);
+
+    // This means we could not get a getSignature to match the query
+    if (g === 0) {
+      console.log('fail 3');
+      return false;
+    }
+  }
+
+  return mappedQueries.reduce(function (query, next) {
+    Object.keys(next)
+      .forEach(function (key) {
+        if (
+          query.hasOwnProperty(key) &&
+            query[key] !== next[key]
+        ) {
+          throw new Error("Key Clash" + key + next[key] + query[key]);
+        }
+
+        query[key] = next[key];
+      });
+
+    return query;
+  });
 }
 
 function overwrite(name, func, toProto) {
@@ -199,55 +250,32 @@ function addGetSignatureOverwrite(a1, a2, a3) {
 // The onlytime get needs to be overwritten is when
 // there is an array of queries and all of them can be mapped
 function getOverwrite(queries, callback) {
-  var getSignatures = this.getSignatures,
-    mappedQueries;
+  var mappedQuery = mapOrFalse(queries, this.getSignatures);
 
-  function isTruthy(item) {
-    return !!item;
-  }
-
-  if (!is.array(queries, 1, Infinity)) {
+  if (!mappedQuery) {
     return getOverwrite.super.call(this, queries, callback);
   }
 
-  mappedQueries = queries.map(function (query) {
-    var chosenSignature,
-      i = getSignatures.length;
+  return getOverwrite.super.call(this, mappedQuery, callback);
+}
 
-    do {
-      i -= 1;
-      chosenSignature = getSignatures[i];
+function countOverwrite(queries, callback) {
+  // If it can be mapped. It can be quickly counted
+  var mappedQuery = mapOrFalse([{}].concat(queries), this.getSignatures),
+    sql = "SELECT COUNT(*) AS total FROM ?? WHERE ?";
 
-      if (
-        chosenSignature.test(query) &&
-          chosenSignature.exec.name === 'canBeMapped'
-      ) {
-        return chosenSignature.map(query);
-      }
-    } while (i !== 0);
+  if (!mappedQuery) {
+    return countOverwrite.super.call(this, queries, callback);
+  }
 
-    return false;
+  if (is.integer(mappedQuery[' limit'])) {
+    sql += ' LIMIT ' + mappedQuery[' limit'];
+    delete mappedQuery[' limit'];
+  }
+
+  db(sql, [this.name, mappedQuery], function (rows) {
+    callback(rows[0].total);
   });
-
-  if (!mappedQueries.every(isTruthy)) {
-    return getOverwrite.super.call(this, queries, callback);
-  }
-
-  return getOverwrite.super.call(this, mappedQueries.reduce(function (query, next) {
-    Object.keys(next)
-      .forEach(function (key) {
-        if (
-          query.hasOwnProperty(key) &&
-            query[key] !== next[key]
-        ) {
-          throw new Error("Key Clash" + key + next[key] + query[key]);
-        }
-
-        query[key] = next[key];
-      });
-
-    return query;
-  }), callback);
 }
 
 module.exports = function mapToDBTable() {
@@ -261,6 +289,7 @@ module.exports = function mapToDBTable() {
     .overwrite('create', createOverwrite)
     .overwrite('addGetSignature', addGetSignatureOverwrite)
     .overwrite('get', getOverwrite)
+    .overwrite('count', countOverwrite)
     .overwritePrototype('update', updateOverwrite)
     .overwritePrototype('delete', deleteOverwrite);
 
