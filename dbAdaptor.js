@@ -38,7 +38,7 @@ function isAutoIncrement(col) {
 function getRowsFromDb(name, query, callback) {
   var sql = "SELECT * FROM ?? WHERE ?";
 
-  if (is.integer(query[' limit'])) {
+  if (query[' limit']) {
     sql += ' LIMIT ' + query[' limit'];
     delete query[' limit'];
   }
@@ -65,7 +65,6 @@ function mapOrFalse(queries, getSignatures) {
 
       if (getSignatures[g].test(queries[q])) {
         if (getSignatures[g].exec.name !== 'canBeMapped') {
-          console.log(getSignatures[g].exec.toString());
           return false;
         }
 
@@ -76,7 +75,6 @@ function mapOrFalse(queries, getSignatures) {
 
     // This means we could not get a getSignature to match the query
     if (g === 0) {
-      console.log('fail 3');
       return false;
     }
   }
@@ -304,8 +302,9 @@ module.exports = function mapToDBTable() {
       return Object.getPrototypeOf(query) === Object.prototype;
     };
 
+    // A map should never be the same object
     getSignature.map = function (query) {
-      return query;
+      return JSON.parse(JSON.stringify(query));
     };
 
     getSignature.keys = getSignature.values = Implementation.properties = rows.map(toName);
