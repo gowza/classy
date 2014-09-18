@@ -288,7 +288,7 @@ Class.prototype.reduceTo = function (properties) {
     i = properties.length;
 
   while (i !== 0) {
-    i += 1;
+    i -= 1;
     reduction[properties[i]] = this[properties[i]];
   }
 
