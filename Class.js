@@ -206,6 +206,7 @@ Class.prototype.init = function (details) {
     key = registry.buildKey(this);
 
     if (!key) {
+      console.log(this);
       throw new Error("Object does not contain all keys necessary to comply with registry.");
     }
 
@@ -280,6 +281,18 @@ Class.prototype.copyProperties = function copyProperties(properties) {
   }
 
   return this;
+};
+
+Class.prototype.reduceTo = function (properties) {
+  var reduction = {},
+    i = properties.length;
+
+  while (i !== 0) {
+    i += 1;
+    reduction[properties[i]] = this[properties[i]];
+  }
+
+  return reduction;
 };
 
 Class.prototype.call = function call(callback) {
