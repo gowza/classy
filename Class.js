@@ -228,7 +228,10 @@ Class.prototype.emit = function (eventName) {
 
   if (eventName === 'error') {
     console.error(this);
-    console.error(arguments);
+
+    Array.prototype.forEach.call(arguments, function (arg) {
+      console.error(arg);
+    });
   }
 
   emit.apply(Implementation, [eventName, this].concat([].slice.call(arguments, 1)));
