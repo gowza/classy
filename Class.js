@@ -7,7 +7,6 @@
 
 var EventEmitter = require('event-emitter'),
   GetSignature = require('./GetSignature'),
-  mapToDBTable = require('./dbAdaptor'),
   Registry = require('./Registry'),
   is = require('is'),
   db = require('db');
@@ -186,7 +185,11 @@ Class.overwritePrototype = function (name, func) {
   this.prototype[name] = func;
 };
 
-Class.mapToDBTable = mapToDBTable;
+Object.defineProperty(Class, 'mapToDBTable', {
+  "get": function () {
+    return require('./dbAdaptor');
+  }
+});
 
 Class.prototype = new EventEmitter();
 
