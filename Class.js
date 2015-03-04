@@ -188,7 +188,8 @@ Class.overwritePrototype = function (name, func) {
 Object.defineProperty(Class, 'mapToDBTable', {
   "get": function () {
     return require('./dbAdaptor');
-  }
+  },
+  "enumerable": true
 });
 
 Class.prototype = new EventEmitter();
