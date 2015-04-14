@@ -247,8 +247,13 @@ function addGetSignatureOverwrite(a1, a2, a3) {
 
 // The onlytime get needs to be overwritten is when
 // there is an array of queries and all of them can be mapped
-function getOverwrite(queries, callback) {
+function getOverwrite(queries, cb) {
   var mappedQuery = mapOrFalse(queries, this.getSignatures);
+
+  function callback(a, b, c) {
+  //  console.log("LENGTH", c);
+    cb.apply(this, arguments);
+  }
 
   if (!mappedQuery) {
     return getOverwrite.super.call(this, queries, callback);
