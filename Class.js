@@ -310,4 +310,39 @@ Class.prototype.call = function call(callback) {
   return this;
 };
 
+Class.prototype.bindCallback = function call(callback, timeout, args) {
+  var now,
+    timer,
+    timedOut = false,
+    self = this;
+
+  if (is.integer(timeout)) {
+    now = Date.now();
+    timer = setTimeout(function () {
+      timedOut = true;
+
+      return self.emit("error", "Callback timed out", {
+        "callback": callback.toString(),
+        "delay": timeout
+      });
+    }, timeout);
+  } else if (is.array(timeout)) {
+    args = timeout;
+    timeout = null;
+  }
+
+  return function () {
+    if (timedOut) {
+      return self.emit("error", "Callback timed out, but was invoked anyway", {
+        "callback": callback.toString(),
+        "delay": Date.now() - now
+      });
+    }
+
+    clearTimeout(timer);
+
+    callback.apply(self, (args || []).concat([].slice.call(arguments, 0)));
+  };
+};
+
 module.exports = Class;
