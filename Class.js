@@ -310,39 +310,60 @@ Class.prototype.call = function call(callback) {
   return this;
 };
 
-Class.prototype.bindCallback = function call(callback, timeout, args) {
-  var now,
-    timer,
-    timedOut = false,
-    self = this;
+Class.prototype.bindCallback = function call(callback, options) {
+  var self = this,
+    timerState;
 
-  if (is.integer(timeout)) {
-    now = Date.now();
-    timer = setTimeout(function () {
-      timedOut = true;
-
-      return self.emit("error", "Callback timed out", {
-        "callback": callback.toString(),
-        "delay": timeout
-      });
-    }, timeout);
-  } else if (is.array(timeout)) {
-    args = timeout;
-    timeout = null;
+  // Massage options
+  if (is.integer(options)) {
+    options = {
+      "timeout": options
+    };
+  } else if (is.array(options)) {
+    options = {
+      "arguments": options
+    };
   }
 
-  return function () {
-    if (timedOut) {
-      return self.emit("error", "Callback timed out, but was invoked anyway", {
-        "callback": callback.toString(),
-        "delay": Date.now() - now
-      });
+  if (!is.array(options.arguments)) {
+    options.arguments = [];
+  }
+
+  function boundCallback() {
+    if (timerState) {
+      if (timerState.timedOut) {
+        return self.emit("error", "Callback timed out (" + String(Date.now() - timerState.now) + "), but was invoked anyway", callback.toString());
+      }
+
+      clearTimeout(timerState.timer);
     }
 
-    clearTimeout(timer);
+    return callback.apply(self, options.arguments.concat([].slice.call(arguments, 0)));
+  }
 
-    callback.apply(self, (args || []).concat([].slice.call(arguments, 0)));
-  };
+  // Manage timeout expectations
+  if (is.integer(options.timeout)) {
+    timerState = {
+      "now": Date.now(),
+      "timedOut": false,
+      "onTimeout": function () {
+        timerState.timedOut = true;
+      }
+    };
+
+    timerState.timer = setTimeout(timerState.onTimeout, options.timeout);
+
+    boundCallback.moreTime = function (time) {
+      if (timerState.timedOut) {
+        return self.emit("error", "Asked for more time after timeout(" + String(Date.now() - timerState.now) + ")", callback.toString());
+      }
+
+      clearTimeout(timerState.timer);
+      timerState.timer = setTimeout(timerState.onTimeout, time);
+    };
+  }
+
+  return boundCallback;
 };
 
 module.exports = Class;
