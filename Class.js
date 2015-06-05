@@ -108,6 +108,10 @@ Class.get = function get(query, callback) {
       i -= 1;
       getSignature = getSignatures[i];
 
+      if (getSignature.test === undefined) {
+        console.log(getSignatures, i, query);
+      }
+
       if (getSignature.test(details)) {
         getSignature.exec(details, manipulateArrayThenCallback);
         return true;
