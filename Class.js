@@ -118,6 +118,7 @@ Class.get = function get(query, callback) {
       }
     } while (i !== 0);
 
+   console.log(getSignatures);
     throw new Error("Uncauht Query");
   });
 
