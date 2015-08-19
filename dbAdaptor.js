@@ -149,10 +149,11 @@ function updateOverwrite(details, callback) {
     name,
     toObj(Implementation.properties, details),
     toObj(primaryKeys, self)
-  ], function () {
+  ], function (e) {
 
     db("SELECT * FROM ?? WHERE ?", [name, toObj(primaryKeys, details, self)], function (rows) {
       if (rows.length !== 1) {
+        console.error(e);
         throw new Error("Lost the instance");
       }
 
