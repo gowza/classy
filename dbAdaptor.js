@@ -310,7 +310,11 @@ module.exports = function mapToDBTable() {
 
     // A map should never be the same object
     getSignature.map = function (query) {
-      return JSON.parse(JSON.stringify(query));
+      return Object.keys(query)
+        .reduce(function (res, key) {
+          res[key] = query[key];
+          return res;
+        }, {})
     };
 
     getSignature.keys = getSignature.values = Implementation.properties = rows.map(toName);
