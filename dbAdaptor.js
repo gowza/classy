@@ -282,10 +282,10 @@ function countOverwrite(queries, callback) {
   });
 }
 
-// Set column helper - add function.
+// "Set" column helper - add function.
 function setHelperAdd(colName, validOptions) {
   return function (option, callback) {
-    if (validOptions.indexOf(option) === -1) {
+    if (!validOptions.includes(option)) {
       throw new Error(`Adding invalid option (${option}) to ${colName}`);
     }
 
@@ -304,7 +304,7 @@ function setHelperAdd(colName, validOptions) {
   };
 }
 
-// Set column helper - remove function.
+// "Set" column helper - remove function.
 function setHelperRemove(colName, colIsNullable) {
   return function (option, callback) {
     let options = (this[colName] || '').split(',')
@@ -325,11 +325,23 @@ function setHelperRemove(colName, colIsNullable) {
   };
 }
 
-// Set column helper - has function.
+// "Set" column helper - has function.
 function setHelperHas(colName) {
   return function (option) {
     return (this[colName] || '').split(',')
         .some(item => item === option);
+  };
+}
+
+// "Set" column helper - get as object.
+function setHelperGetObject(colName, validOptions) {
+  return function () {
+    const options = (this[colName] || '').split(',');
+
+    return validOptions.reduce((prev, option) => {
+      prev[option] = options.includes(option);
+      return prev;
+    }, {});
   };
 }
 
@@ -390,6 +402,7 @@ module.exports = function mapToDBTable() {
     Implementation.prototype['add' + properCaseColName] = setHelperAdd(colName, validOptions);
     Implementation.prototype['remove' + properCaseColName] = setHelperRemove(colName, colIsNullable);
     Implementation.prototype['has' + properCaseColName] = setHelperHas(colName);
+    Implementation.prototype['get' + properCaseColName + 'AsObject'] = setHelperGetObject(colName, validOptions);
   });
 
     Implementation.autoIncrement = rows.filter(isAutoIncrement)
