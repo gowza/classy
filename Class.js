@@ -118,7 +118,7 @@ Class.get = function get(query, callback) {
       }
     } while (i !== 0);
 
-    throw new Error("Uncauht Query");
+    throw new Error("Uncaught Query");
   });
 
   return this;

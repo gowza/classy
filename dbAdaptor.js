@@ -282,6 +282,69 @@ function countOverwrite(queries, callback) {
   });
 }
 
+// "Set" column helper - add function.
+function setHelperAdd(colName, validOptions) {
+  return function (option, callback) {
+    if (!validOptions.includes(option)) {
+      throw new Error(`Adding invalid option (${option}) to ${colName}`);
+    }
+
+    const options = (this[colName] || '').split(',')
+        .filter(item => item !== option)
+    .concat(option)
+      .join(',');
+
+    if (callback === true) {
+      return options;
+    }
+
+    return this.update({
+      [colName]: options
+    }, () => this.call(callback));
+  };
+}
+
+// "Set" column helper - remove function.
+function setHelperRemove(colName, colIsNullable) {
+  return function (option, callback) {
+    let options = (this[colName] || '').split(',')
+        .filter(item => item !== option)
+    .join(',');
+
+    if (colIsNullable && options.length === 0) {
+      options = null;
+    }
+
+    if (callback === true) {
+      return options;
+    }
+
+    return this.update({
+      [colName]: options
+    }, () => this.call(callback));
+  };
+}
+
+// "Set" column helper - has function.
+function setHelperHas(colName) {
+  return function (option) {
+    return (this[colName] || '').split(',')
+        .some(item => item === option);
+  };
+}
+
+// "Set" column helper - get as object.
+function setHelperGetObject(colName, validOptions) {
+  return function () {
+    const options = (this[colName] || '').split(',');
+
+    return validOptions.reduce((prev, option) => {
+      prev[option] = options.includes(option);
+      return prev;
+    }, {});
+  };
+}
+
 module.exports = function mapToDBTable() {
   var Implementation = this,
     name = this.name;
@@ -322,6 +385,25 @@ module.exports = function mapToDBTable() {
     getSignature.priority = -1;
 
     Implementation.addGetSignature(getSignature);
+
+    rows.forEach((row) => {
+      const match = /^set\((.+)\)$/.exec(row.Type);
+
+    if (!match) {
+      return;
+    }
+
+    // Add helper functions for "Set" column.
+    const colName = row.Field,
+      properCaseColName = colName.charAt(0).toUpperCase() + colName.substr(1),
+      validOptions = match[1].replace(/'/g, '').split(','),
+      colIsNullable = row.Null === "YES";
+
+    Implementation.prototype['add' + properCaseColName] = setHelperAdd(colName, validOptions);
+    Implementation.prototype['remove' + properCaseColName] = setHelperRemove(colName, colIsNullable);
+    Implementation.prototype['has' + properCaseColName] = setHelperHas(colName);
+    Implementation.prototype['get' + properCaseColName + 'AsObject'] = setHelperGetObject(colName, validOptions);
+  });
 
     Implementation.autoIncrement = rows.filter(isAutoIncrement)
       .map(toName)
