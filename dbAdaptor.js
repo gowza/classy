@@ -35,8 +35,17 @@ function isAutoIncrement(col) {
   return col.Extra.indexOf('auto_increment') !== -1;
 }
 
-function getRowsFromDb(name, query, callback) {
+function getRowsFromDb(name, originalQuery, callback) {
   var sql = "SELECT * FROM ?? WHERE ?";
+
+  var query = Object.keys(originalQuery).reduce(function (prev, key) {
+    if (typeof originalQuery[key] === 'object') {
+      return prev;
+    }
+
+    prev[key] = originalQuery[key];
+    return prev;
+  }, {});
 
   if (query[' limit']) {
     sql += ' LIMIT ' + query[' limit'];
