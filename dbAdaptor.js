@@ -39,7 +39,7 @@ function getRowsFromDb(name, originalQuery, callback) {
   var sql = "SELECT * FROM ?? WHERE ?";
 
   var query = Object.keys(originalQuery).reduce(function (prev, key) {
-    if (Buffer.isBuffer(originalQuery[key])) {
+    if (/^password/.test(key)) {
       return prev;
     }
 
