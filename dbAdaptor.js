@@ -398,21 +398,21 @@ module.exports = function mapToDBTable() {
     rows.forEach((row) => {
       const match = /^set\((.+)\)$/.exec(row.Type);
 
-    if (!match) {
-      return;
-    }
+      if (!match) {
+        return;
+      }
 
-    // Add helper functions for "Set" column.
-    const colName = row.Field,
-      properCaseColName = colName.charAt(0).toUpperCase() + colName.substr(1),
-      validOptions = match[1].replace(/'/g, '').split(','),
-      colIsNullable = row.Null === "YES";
+      // Add helper functions for "Set" column.
+      const colName = row.Field,
+        properCaseColName = colName.charAt(0).toUpperCase() + colName.substr(1),
+        validOptions = match[1].replace(/'/g, '').split(','),
+        colIsNullable = row.Null === "YES";
 
-    Implementation.prototype['add' + properCaseColName] = setHelperAdd(colName, validOptions);
-    Implementation.prototype['remove' + properCaseColName] = setHelperRemove(colName, colIsNullable);
-    Implementation.prototype['has' + properCaseColName] = setHelperHas(colName);
-    Implementation.prototype['get' + properCaseColName + 'AsObject'] = setHelperGetObject(colName, validOptions);
-  });
+      Implementation.prototype['add' + properCaseColName] = setHelperAdd(colName, validOptions);
+      Implementation.prototype['remove' + properCaseColName] = setHelperRemove(colName, colIsNullable);
+      Implementation.prototype['has' + properCaseColName] = setHelperHas(colName);
+      Implementation.prototype['get' + properCaseColName + 'AsObject'] = setHelperGetObject(colName, validOptions);
+    });
 
     Implementation.autoIncrement = rows.filter(isAutoIncrement)
       .map(toName)
