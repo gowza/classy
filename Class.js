@@ -254,7 +254,7 @@ Class.prototype.emit = function (eventName) {
 Class.prototype.delete = function delet(callback) {
   var registry = this.constructor.registry;
 
-  if (registry) {
+  if (registry && !this.noRegistryCache) {
     delete registry[registry.buildKey(this)];
   }
 
@@ -269,7 +269,7 @@ Class.prototype.update = function update(values, callback) {
   // If the key values change then you can end up with two of the same object
   // with different addresses in the registry, thanks to buildKey method this is quite
   // easy to fix
-  if (registry) {
+  if (registry && !this.noRegistryCache) {
     delete registry[registry.buildKey(this)];
   }
 
@@ -277,7 +277,7 @@ Class.prototype.update = function update(values, callback) {
 
   this.copyProperties(values);
 
-  if (registry) {
+  if (registry && !this.noRegistryCache) {
     registry[registry.buildKey(this)] = this;
   }
 
