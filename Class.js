@@ -43,9 +43,12 @@ function intersection(arraysToIntersect) {
   });
 }
 
-function Class(Implementation, noRegistryCache = false) {
+function Class(Implementation, options = {}) {
   this.constructor = Implementation;
-  this.noRegistryCache = noRegistryCache;
+
+  if (options.hasOwnProperty('noRegistryCache')) {
+    this.noRegistryCache = options.noRegistryCache;
+  }
 
   Implementation.getSignatures = [];
 

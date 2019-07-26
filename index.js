@@ -8,7 +8,7 @@
 
 var Class = require('./Class');
 
-module.exports = function returnClass(module, noRegistryCache) {
+module.exports = function returnClass(module, options) {
   // Parse Classname from File name
   var className = /\/([A-Z][A-Za-z]+)\.js$/.exec(module.filename),
     Implementation;
@@ -25,7 +25,7 @@ module.exports = function returnClass(module, noRegistryCache) {
     className = '';
   }
 
-  Implementation.prototype = new Class(Implementation, noRegistryCache);
+  Implementation.prototype = new Class(Implementation, options);
 
   Implementation.is = Implementation.is.bind(Implementation);
 
