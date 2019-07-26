@@ -43,8 +43,9 @@ function intersection(arraysToIntersect) {
   });
 }
 
-function Class(Implementation) {
+function Class(Implementation, noRegistryCache = false) {
   this.constructor = Implementation;
+  this.noRegistryCache = noRegistryCache;
 
   Implementation.getSignatures = [];
 
@@ -210,7 +211,7 @@ Class.prototype.init = function (details) {
 
   this.copyProperties(details);
 
-  if (registry) {
+  if (registry && !this.noRegistryCache) {
     key = registry.buildKey(this);
 
     if (!key) {
