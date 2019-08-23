@@ -1,6 +1,6 @@
 {
   "name": "classy",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A class based system for nodejs",
   "main": "index.js",
   "repository": {
@@ -15,7 +15,7 @@
   },
   "homepage": "https://github.com/roderickObrist/classy#readme",
   "dependencies": {
-    "db": "git+https://github.com/gowza/db.git",
+    "db": "git+https://github.com/gowza/db.git#1.0.1",
     "event-emitter": "git+https://github.com/gowza/event-emitter.git",
     "is": "git+https://github.com/gowza/is.git"
   }
