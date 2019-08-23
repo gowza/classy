@@ -1,6 +1,6 @@
 {
   "name": "classy",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A class based system for nodejs",
   "main": "index.js",
   "repository": {

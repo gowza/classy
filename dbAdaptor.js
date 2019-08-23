@@ -43,6 +43,15 @@ function getRowsFromDb(name, originalQuery, callback) {
       return prev;
     }
 
+    // Remove miliseconds from time in the query.
+    // This is a work around to ensure that Event table query works properly.
+    if (originalQuery[key] instanceof Date) {
+      const d = new Date(originalQuery[key].getTime())
+      d.setMilliseconds(0);
+      prev[key] = d;
+      return prev;
+    }
+
     prev[key] = originalQuery[key];
     return prev;
   }, {});
